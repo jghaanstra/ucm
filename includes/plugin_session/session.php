@@ -22,6 +22,7 @@ class module_session extends module_base {
 
 	public function __construct() {
 
+		if(isset($_SESSION))return true;
 		if ( self::is_db_sessions_enabled() ) {
 			try {
 				session_set_save_handler(
@@ -74,7 +75,9 @@ class module_session extends module_base {
 		$this->module_position = 0;
 
 
-		$this->version = 2.166;
+		$this->version = 2.168;
+		//2.168 - 2019-04-20 - fix database sessions
+		//2.167 - 2019-04-06 - fix database sessions
 		//2.166 - 2017-05-02 - file path configuration
 		//2.165 - 2016-07-13 - big update to mysqli
 		//2.164 - 2016-07-10 - big update to mysqli
@@ -97,7 +100,7 @@ class module_session extends module_base {
 
 	public static function read( $session_id ) {
 		if ( self::$destroyed ) {
-			return false;
+			return '';
 		}
 		self::$session_id = $session_id;
 		if ( ! self::db_table_exists( 'session', true ) ) {
@@ -117,10 +120,10 @@ class module_session extends module_base {
 			}
 			self::$session_hash = md5( $res['session_data'] );
 
-			return $res['session_data'];
+			return !empty($res['session_data']) ? $res['session_data'] : '';
 		}
 
-		return false;
+		return '';
 	}
 
 	public static function write( $session_id, $data ) {
